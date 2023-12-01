@@ -8,13 +8,20 @@ import (
 	"strings"
 )
 
-func main() {
-	f, _ := os.Open("./day1-input.txt")
-	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
+type LineNums struct {
+	first  string
+	second string
+}
 
-	num := []int{}
+func (l *LineNums) toInt() int {
+	n, err := strconv.Atoi(strings.Join([]string{l.first, l.second}, ""))
+	if err != nil {
+		fmt.Printf("Error parsing strings %v \n", err)
+	}
+	return n
+}
 
+func checkStrings(first byte, second string) string {
 	digits := map[string]int{
 		"one":   1,
 		"two":   2,
@@ -26,17 +33,31 @@ func main() {
 		"eight": 8,
 		"nine":  9,
 	}
+	stringChar := string(first)
+	_, err := strconv.Atoi(stringChar)
+	if err == nil {
+		return stringChar
+	}
+
+	for key, val := range digits {
+		if strings.Contains(second, key) {
+			return strconv.Itoa(val)
+		}
+	}
+	return ""
+}
+
+func main() {
+	f, _ := os.Open("./day1-input.txt")
+	s := bufio.NewScanner(f)
+	s.Split(bufio.ScanLines)
+
+	num := []int{}
 
 	for s.Scan() {
 		line := s.Text()
 
-		lineNums := struct {
-			first  string
-			second string
-		}{
-			first:  "",
-			second: "",
-		}
+		lineNums := LineNums{}
 		f, s := 0, len(line)-1
 		for {
 			if lineNums.first != "" && lineNums.second != "" {
@@ -44,47 +65,25 @@ func main() {
 			}
 
 			if lineNums.first == "" {
-				stringChar := string(line[f])
-				_, err := strconv.Atoi(stringChar)
-				if err == nil {
-					lineNums.first = stringChar
+				res := checkStrings(line[f], line[:f+1])
+				if res != "" {
+					lineNums.first = res
 				}
 
-				t := line[:f+1]
-				for key, val := range digits {
-					if strings.Contains(t, key) {
-						lineNums.first = strconv.Itoa(val)
-						fmt.Printf("Found %v in string %v \n", val, t)
-						break
-					}
-				}
 				f++
 			}
 			if lineNums.second == "" {
-				stringChar := string(line[s])
-				_, err := strconv.Atoi(stringChar)
-				if err == nil {
-					lineNums.second = stringChar
-				}
-
-				t := line[s:]
-				for key, val := range digits {
-					if strings.Contains(t, key) {
-						lineNums.second = strconv.Itoa(val)
-						break
-					}
+				res := checkStrings(line[s], line[s:])
+				if res != "" {
+					lineNums.second = res
 				}
 				s--
 			}
 
 		}
 
-		n, err := strconv.Atoi(strings.Join([]string{lineNums.first, lineNums.second}, ""))
-		if err != nil {
-			fmt.Printf("Error parsing strings %v \n", err)
-		}
-		fmt.Printf("Line %s, vals: %v, nums: %v \n", line, n, lineNums)
-		num = append(num, n)
+		fmt.Printf("Line %s, nums: %v \n", line, lineNums)
+		num = append(num, lineNums.toInt())
 	}
 
 	res := 0
