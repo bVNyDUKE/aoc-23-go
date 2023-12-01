@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -21,28 +22,30 @@ func (l *LineNums) toInt() int {
 	return n
 }
 
+var digits = map[string]string{
+	"one":   "1",
+	"two":   "2",
+	"three": "3",
+	"four":  "4",
+	"five":  "5",
+	"six":   "6",
+	"seven": "7",
+	"eight": "8",
+	"nine":  "9",
+}
+
+var re = regexp.MustCompile(`(one|two|three|four|five|six|seven|eight|nine)`)
+
 func checkStrings(first byte, second string) string {
-	digits := map[string]int{
-		"one":   1,
-		"two":   2,
-		"three": 3,
-		"four":  4,
-		"five":  5,
-		"six":   6,
-		"seven": 7,
-		"eight": 8,
-		"nine":  9,
-	}
 	stringChar := string(first)
 	_, err := strconv.Atoi(stringChar)
 	if err == nil {
 		return stringChar
 	}
 
-	for key, val := range digits {
-		if strings.Contains(second, key) {
-			return strconv.Itoa(val)
-		}
+	matched := re.FindString(second)
+	if matched != "" {
+		return digits[matched]
 	}
 	return ""
 }
@@ -50,7 +53,6 @@ func checkStrings(first byte, second string) string {
 func main() {
 	f, _ := os.Open("./day1-input.txt")
 	s := bufio.NewScanner(f)
-	s.Split(bufio.ScanLines)
 
 	num := []int{}
 
