@@ -28,48 +28,58 @@ func main() {
 	}
 
 	for s.Scan() {
-		orig := s.Text()
-		line := orig
+		line := s.Text()
 
-		lineNums := []string{}
-
-	first:
-		for i, c := range line {
-			stringChar := string(c)
-			_, err := strconv.Atoi(stringChar)
-			if err == nil {
-				lineNums = append(lineNums, stringChar)
+		lineNums := struct {
+			first  string
+			second string
+		}{
+			first:  "",
+			second: "",
+		}
+		f, s := 0, len(line)-1
+		for {
+			if lineNums.first != "" && lineNums.second != "" {
 				break
 			}
 
-			t := line[:i+1]
-			for key, val := range digits {
-				if strings.Contains(t, key) {
-					lineNums = append(lineNums, strconv.Itoa(val))
-					fmt.Printf("Found %v in string %v \n", val, t)
-					break first
+			if lineNums.first == "" {
+				stringChar := string(line[f])
+				_, err := strconv.Atoi(stringChar)
+				if err == nil {
+					lineNums.first = stringChar
 				}
+
+				t := line[:f+1]
+				for key, val := range digits {
+					if strings.Contains(t, key) {
+						lineNums.first = strconv.Itoa(val)
+						fmt.Printf("Found %v in string %v \n", val, t)
+						break
+					}
+				}
+				f++
 			}
+			if lineNums.second == "" {
+				stringChar := string(line[s])
+				_, err := strconv.Atoi(stringChar)
+				if err == nil {
+					lineNums.second = stringChar
+				}
+
+				t := line[s:]
+				for key, val := range digits {
+					if strings.Contains(t, key) {
+						lineNums.second = strconv.Itoa(val)
+						break
+					}
+				}
+				s--
+			}
+
 		}
 
-	second:
-		for i := len(line) - 1; i >= 0; i-- {
-			stringChar := string(line[i])
-			_, err := strconv.Atoi(stringChar)
-			if err == nil {
-				lineNums = append(lineNums, stringChar)
-				break
-			}
-			t := line[i:]
-			for key, val := range digits {
-				if strings.Contains(t, key) {
-					lineNums = append(lineNums, strconv.Itoa(val))
-					break second
-				}
-			}
-		}
-
-		n, err := strconv.Atoi(strings.Join(lineNums, ""))
+		n, err := strconv.Atoi(strings.Join([]string{lineNums.first, lineNums.second}, ""))
 		if err != nil {
 			fmt.Printf("Error parsing strings %v \n", err)
 		}
