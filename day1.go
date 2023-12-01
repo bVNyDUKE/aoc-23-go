@@ -54,7 +54,7 @@ func main() {
 	f, _ := os.Open("./day1-input.txt")
 	s := bufio.NewScanner(f)
 
-	num := []int{}
+	res := 0
 
 	for s.Scan() {
 		line := s.Text()
@@ -85,12 +85,7 @@ func main() {
 		}
 
 		fmt.Printf("Line %s, nums: %v \n", line, lineNums)
-		num = append(num, lineNums.toInt())
-	}
-
-	res := 0
-	for _, v := range num {
-		res += v
+		res += lineNums.toInt()
 	}
 	fmt.Println(res)
 }
