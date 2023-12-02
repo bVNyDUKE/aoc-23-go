@@ -15,22 +15,21 @@ func main() {
 
 	res := 0
 
-	limits := map[string]int{
-		"red":   12,
-		"green": 13,
-		"blue":  14,
-	}
-
 	for s.Scan() {
 		line := s.Text()
 		data := strings.Split(line, ":")
-		gameId, _ := strconv.Atoi(strings.Split(data[0], " ")[1])
 		games := strings.Split(data[1], ";")
 
-		valid := true
-	o:
+		gameStats := map[string]int{
+			"red":   0,
+			"green": 0,
+			"blue":  0,
+		}
+
 		for _, g := range games {
+
 			cubes := strings.Split(g, ",")
+
 			for _, cube := range cubes {
 				d := strings.Split(strings.TrimSpace(cube), " ")
 				val, err := strconv.Atoi(d[0])
@@ -38,16 +37,14 @@ func main() {
 					log.Fatal(err)
 				}
 				col := d[1]
-				if val > limits[col] {
-					valid = false
-					break o
+				if val > gameStats[col] {
+					gameStats[col] = val
 				}
 			}
 		}
-		if valid {
-			fmt.Println("Possible game", line)
-			res += gameId
-		}
+		fmt.Println(line, gameStats)
+		pow := gameStats["red"] * gameStats["blue"] * gameStats["green"]
+		res += pow
 
 	}
 	fmt.Println(res)
