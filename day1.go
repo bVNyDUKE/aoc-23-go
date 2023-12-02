@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"strconv"
 )
 
 type LineNums struct {
@@ -19,26 +18,29 @@ func (l *LineNums) toInt() int {
 
 var digits = map[string]int{
 	"one":   1,
+	"1":     1,
 	"two":   2,
+	"2":     2,
 	"three": 3,
+	"3":     3,
 	"four":  4,
+	"4":     4,
 	"five":  5,
+	"5":     5,
 	"six":   6,
+	"6":     6,
 	"seven": 7,
+	"7":     7,
 	"eight": 8,
+	"8":     8,
 	"nine":  9,
+	"9":     9,
 }
 
-var re = regexp.MustCompile(`(one|two|three|four|five|six|seven|eight|nine)`)
+var re = regexp.MustCompile(`(one|two|three|four|five|six|seven|eight|nine|1|2|3|4|5|6|7|8|9)`)
 
-func checkStrings(first byte, second string) int {
-	stringChar := string(first)
-	val, err := strconv.Atoi(stringChar)
-	if err == nil {
-		return val
-	}
-
-	matched := re.FindString(second)
+func checkStrings(s string) int {
+	matched := re.FindString(s)
 	if matched != "" {
 		return digits[matched]
 	}
@@ -62,7 +64,7 @@ func main() {
 			}
 
 			if lineNums.first == 0 {
-				res := checkStrings(line[f], line[:f+1])
+				res := checkStrings(line[:f+1])
 				if res != 0 {
 					lineNums.first = res
 				}
@@ -70,7 +72,7 @@ func main() {
 				f++
 			}
 			if lineNums.second == 0 {
-				res := checkStrings(line[s], line[s:])
+				res := checkStrings(line[s:])
 				if res != 0 {
 					lineNums.second = res
 				}
