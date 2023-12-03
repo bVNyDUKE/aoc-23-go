@@ -7,10 +7,16 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
-var re = regexp.MustCompile("[^\\d\\.]")
+var re = regexp.MustCompile("\\*")
+
+func makeKey(y, min int) string {
+	arr := []string{strconv.Itoa(y), strconv.Itoa(min)}
+	return strings.Join(arr, ";")
+}
 
 func main() {
 	f, _ := os.Open("./input.txt")
@@ -23,8 +29,9 @@ func main() {
 		engine = append(engine, s.Text())
 	}
 
+	symbols := map[string][]int{}
+
 	for y, line := range engine {
-		fmt.Println(line)
 		for i := 0; i < len(line); i++ {
 			if unicode.IsDigit(rune(line[i])) {
 				start := i
@@ -33,7 +40,6 @@ func main() {
 					end++
 				}
 				val, err := strconv.Atoi(line[start:end])
-				fmt.Println(val)
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -47,23 +53,39 @@ func main() {
 					max++
 				}
 
-				var arround string
 				if y > 0 {
-					arround += engine[y-1][min:max]
+					if loc := re.FindStringIndex(engine[y-1][min:max]); loc != nil {
+						key := makeKey(y-1, min+loc[0])
+						symbols[key] = append(symbols[key], val)
+						i = end - 1
+						continue
+					}
 				}
-				arround += engine[y][min:max]
+				if loc := re.FindStringIndex(engine[y][min:max]); loc != nil {
+					key := makeKey(y, min+loc[0])
+					symbols[key] = append(symbols[key], val)
+					i = end - 1
+					continue
+				}
 				if y < len(engine)-1 {
-					arround += engine[y+1][min:max]
+					if loc := re.FindStringIndex(engine[y+1][min:max]); loc != nil {
+						key := makeKey(y+1, min+loc[0])
+						symbols[key] = append(symbols[key], val)
+						i = end - 1
+						continue
+					}
 				}
 
-				if re.MatchString(arround) {
-					res += val
-					fmt.Println(arround, len(arround))
-				}
 				i = end - 1
 				continue
 			}
 		}
 	}
+	for _, vals := range symbols {
+		if len(vals) == 2 {
+			res += vals[0] * vals[1]
+		}
+	}
+	fmt.Println(symbols)
 	fmt.Println(res)
 }
