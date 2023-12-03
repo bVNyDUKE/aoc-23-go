@@ -31,6 +31,15 @@ func main() {
 
 	symbols := map[string][]int{}
 
+	checkString := func(y, min, max, val int) bool {
+		if loc := re.FindStringIndex(engine[y][min:max]); loc != nil {
+			key := makeKey(y-1, min+loc[0])
+			symbols[key] = append(symbols[key], val)
+			return true
+		}
+		return false
+	}
+
 	for y, line := range engine {
 		for i := 0; i < len(line); i++ {
 			if unicode.IsDigit(rune(line[i])) {
@@ -53,27 +62,17 @@ func main() {
 					max++
 				}
 
-				if y > 0 {
-					if loc := re.FindStringIndex(engine[y-1][min:max]); loc != nil {
-						key := makeKey(y-1, min+loc[0])
-						symbols[key] = append(symbols[key], val)
-						i = end - 1
-						continue
-					}
-				}
-				if loc := re.FindStringIndex(engine[y][min:max]); loc != nil {
-					key := makeKey(y, min+loc[0])
-					symbols[key] = append(symbols[key], val)
+				if y > 0 && checkString(y-1, min, max, val) {
 					i = end - 1
 					continue
 				}
-				if y < len(engine)-1 {
-					if loc := re.FindStringIndex(engine[y+1][min:max]); loc != nil {
-						key := makeKey(y+1, min+loc[0])
-						symbols[key] = append(symbols[key], val)
-						i = end - 1
-						continue
-					}
+				if checkString(y, min, max, val) {
+					i = end - 1
+					continue
+				}
+				if y < len(engine)-1 && checkString(y+1, min, max, val) {
+					i = end - 1
+					continue
 				}
 
 				i = end - 1
