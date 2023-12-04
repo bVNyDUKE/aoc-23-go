@@ -1,3 +1,3 @@
 module aoc/day3
 
-go 1.20
+go 1.21
