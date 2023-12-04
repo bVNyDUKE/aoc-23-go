@@ -16,8 +16,7 @@ func main() {
 	f, _ := os.Open("./input.txt")
 	s := bufio.NewScanner(f)
 
-	res := 0
-	cards := make([]Card, 0, 100)
+	cards := make([]*Card, 0, 100)
 
 	for s.Scan() {
 		card := strings.Split(s.Text(), ":")[1]
@@ -40,10 +39,12 @@ func main() {
 			}
 		}
 
-		cards = append(cards, Card{points: points, count: 1})
+		cards = append(cards, &Card{points: points, count: 1})
 	}
 
+	res := 0
 	for i, card := range cards {
+		res += card.count
 		if card.points == 0 {
 			continue
 		}
@@ -52,9 +53,7 @@ func main() {
 			cards[i+j].count += card.count
 		}
 	}
-	for _, card := range cards {
-		res += card.count
-	}
+
 	fmt.Println(cards)
 	fmt.Println(res)
 }
