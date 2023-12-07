@@ -99,16 +99,38 @@ func main() {
 		return loc
 	}
 
-	res := -1
-	for _, seed := range seeds {
-		r := seedToLocation(seed)
-		if res == -1 {
-			res = r
+	resChan := make(chan int)
+
+	crunch := func(start, end int) {
+		res := -1
+		fmt.Println("Crunching", start, end)
+		for k := start; k <= end; k++ {
+			val := seedToLocation(k)
+			if res == -1 || val < res {
+				res = val
+			}
 		}
-		if r < res {
-			res = r
+		resChan <- res
+	}
+
+	for i := 0; i < len(seeds)-1; i += 2 {
+		start := seeds[i]
+		rng := seeds[i+1]
+		end := rng + seeds[i]
+		mid := (start + end) / 2
+		fmt.Println(start, rng, end, mid)
+		go crunch(start, mid)
+		go crunch(mid+1, end)
+	}
+
+	res := -1
+	for i := 0; i < len(seeds); i++ {
+		val := <-resChan
+		fmt.Println(val)
+		if res == -1 || val < res {
+			res = val
 		}
 	}
 
-	fmt.Println(res)
+	fmt.Println("RESULT:", res)
 }
