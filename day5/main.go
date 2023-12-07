@@ -46,9 +46,9 @@ func parseMap(s *bufio.Scanner) [][]int {
 func convertValue(val int, valmap [][]int) int {
 	for _, row := range valmap {
 		dest, src, rlen := row[0], row[1], row[2]
-		if src <= val && val < (src+rlen) {
+		if dest <= val && val < (dest+rlen) {
 			dif := dest - src
-			return val + dif
+			return val - dif
 		}
 	}
 
@@ -88,27 +88,30 @@ func main() {
 		}
 	}
 
-	seedToLocation := func(seed int) int {
-		soil := convertValue(seed, soilmap)
-		fert := convertValue(soil, fertmap)
-		water := convertValue(fert, watermap)
-		light := convertValue(water, lightmap)
-		temp := convertValue(light, tempmap)
-		hum := convertValue(temp, humidmap)
-		loc := convertValue(hum, locmap)
-		return loc
+	locationToSeed := func(loc int) int {
+		hum := convertValue(loc, humidmap)
+		temp := convertValue(hum, tempmap)
+		light := convertValue(temp, lightmap)
+		water := convertValue(light, watermap)
+		fert := convertValue(water, fertmap)
+		seed := convertValue(fert, soilmap)
+		return seed
 	}
 
-	res := -1
-	for _, seed := range seeds {
-		r := seedToLocation(seed)
-		if res == -1 {
-			res = r
-		}
-		if r < res {
-			res = r
+	maxLoc := 0
+	for _, loc := range locmap {
+		if loc[0] > maxLoc {
+			maxLoc = loc[0]
 		}
 	}
 
-	fmt.Println(res)
+	for i := 0; i <= maxLoc; i++ {
+		seed := locationToSeed(i)
+		for k := 0; k < len(seeds)-1; k += 2 {
+			if seeds[k] <= seed && seed < seeds[k]+seeds[k+1] {
+				fmt.Println(i)
+				return
+			}
+		}
+	}
 }
