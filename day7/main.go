@@ -13,8 +13,13 @@ import (
 
 func getUniqueChars(s string) int {
 	u := map[string]int{}
+	jokerCount := 0
 	for _, char := range strings.Split(s, "") {
-		u[char]++
+		if char == "J" {
+			jokerCount++
+		} else {
+			u[char]++
+		}
 	}
 
 	vals := make([]int, 0, 5)
@@ -28,6 +33,8 @@ func getUniqueChars(s string) int {
 	for i, val := range vals {
 		res[i] = val
 	}
+
+	res[0] = res[0] + jokerCount
 
 	rank := 0
 	for i, val := range res {
@@ -47,7 +54,7 @@ var charVals = map[string]int{
 	"8": 6,
 	"9": 7,
 	"T": 8,
-	"J": 9,
+	"J": -1,
 	"Q": 10,
 	"K": 11,
 	"A": 12,
