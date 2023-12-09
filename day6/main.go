@@ -15,33 +15,27 @@ func main() {
 	s := bufio.NewScanner(f)
 
 	s.Scan()
-	time := re.FindAllString(s.Text(), -1)
+	timeDigits := re.FindAllString(s.Text(), -1)
+	ts := ""
+	for i := range timeDigits {
+		ts += timeDigits[i]
+	}
 
 	s.Scan()
-	dist := re.FindAllString(s.Text(), -1)
-
-	fmt.Println(time, dist)
-	vals := make([]int, 0, len(time))
-
-	for i, t := range time {
-		res := 0
-		t, _ := strconv.Atoi(t)
-		d, _ := strconv.Atoi(dist[i])
-		for s := 1; s < t; s++ {
-			if s*(t-s) > d {
-				res++
-			}
-		}
-		vals = append(vals, res)
+	distDigits := re.FindAllString(s.Text(), -1)
+	ds := ""
+	for i := range distDigits {
+		ds += distDigits[i]
 	}
-	fmt.Printf("%#v\n", vals)
+	time, _ := strconv.Atoi(ts)
+	dist, _ := strconv.Atoi(ds)
+
+	fmt.Println(ts, ds)
 
 	res := 0
-	for _, v := range vals {
-		if res == 0 {
-			res = v
-		} else {
-			res *= v
+	for i := 1; i < time; i++ {
+		if i*(time-i) > dist {
+			res++
 		}
 	}
 	fmt.Printf("%d\n", res)
