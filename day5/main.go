@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 func parseLine(line string) []int {
@@ -45,10 +46,8 @@ func parseMap(s *bufio.Scanner) [][]int {
 
 func convertValue(val int, valmap [][]int) int {
 	for _, row := range valmap {
-		dest, src, rlen := row[0], row[1], row[2]
-		if src <= val && val < (src+rlen) {
-			dif := dest - src
-			return val + dif
+		if row[1] <= val && val < (row[1]+row[2]) {
+			return val + (row[0] - row[1])
 		}
 	}
 
@@ -89,19 +88,22 @@ func main() {
 	}
 
 	seedToLocation := func(seed int) int {
-		soil := convertValue(seed, soilmap)
-		fert := convertValue(soil, fertmap)
-		water := convertValue(fert, watermap)
-		light := convertValue(water, lightmap)
-		temp := convertValue(light, tempmap)
-		hum := convertValue(temp, humidmap)
-		loc := convertValue(hum, locmap)
-		return loc
+		var i int
+		i = convertValue(seed, soilmap)
+		i = convertValue(i, fertmap)
+		i = convertValue(i, watermap)
+		i = convertValue(i, lightmap)
+		i = convertValue(i, tempmap)
+		i = convertValue(i, humidmap)
+		i = convertValue(i, locmap)
+		return i
 	}
 
 	resChan := make(chan int)
+	var wg sync.WaitGroup
 
 	crunch := func(start, end int) {
+		defer wg.Done()
 		res := -1
 		fmt.Println("Crunching", start, end)
 		for k := start; k <= end; k++ {
@@ -110,23 +112,31 @@ func main() {
 				res = val
 			}
 		}
+		fmt.Println("Sending", res)
 		resChan <- res
 	}
 
 	for i := 0; i < len(seeds)-1; i += 2 {
 		start := seeds[i]
-		rng := seeds[i+1]
-		end := rng + seeds[i]
+		end := seeds[i+1] + seeds[i]
 		mid := (start + end) / 2
-		fmt.Println(start, rng, end, mid)
-		go crunch(start, mid)
-		go crunch(mid+1, end)
+		f := (start + mid) / 2
+		s := (mid + end) / 2
+
+		wg.Add(4)
+		go crunch(start, f)
+		go crunch(f+1, mid)
+		go crunch(mid+1, s)
+		go crunch(s+1, end)
 	}
 
+	go func() {
+		wg.Wait()
+		close(resChan)
+	}()
+
 	res := -1
-	for i := 0; i < len(seeds); i++ {
-		val := <-resChan
-		fmt.Println(val)
+	for val := range resChan {
 		if res == -1 || val < res {
 			res = val
 		}
