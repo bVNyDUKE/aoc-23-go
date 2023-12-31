@@ -105,7 +105,6 @@ func main() {
 	crunch := func(start, end int) {
 		defer wg.Done()
 		res := -1
-		fmt.Println("Crunching", start, end)
 		for k := start; k <= end; k++ {
 			val := seedToLocation(k)
 			if res == -1 || val < res {
@@ -118,16 +117,15 @@ func main() {
 
 	for i := 0; i < len(seeds)-1; i += 2 {
 		start := seeds[i]
-		end := seeds[i+1] + seeds[i]
-		mid := (start + end) / 2
-		f := (start + mid) / 2
-		s := (mid + end) / 2
+		end := start + seeds[i+1]
+		seg := seeds[i+1] / 6
 
-		wg.Add(4)
-		go crunch(start, f)
-		go crunch(f+1, mid)
-		go crunch(mid+1, s)
-		go crunch(s+1, end)
+		for k := start; k <= end-seg+2; k += seg + 1 {
+			wg.Add(1)
+			fmt.Println("Crunching", k, k+seg)
+			go crunch(k, k+seg)
+		}
+
 	}
 
 	go func() {
